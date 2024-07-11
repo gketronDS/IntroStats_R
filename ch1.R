@@ -101,3 +101,68 @@ print(head(d))
 
 # use sort to go by small to large or vise versa, order() to sort by another column.
 #problems 1-5
+
+#Problem 1
+#How would you check whether two vectors are the same if they may contain
+#NA values? 
+
+x <- c(NA, 1, 5, 6)
+cee <- c(NA, 1, 7, 6)
+dee <- c(NA, 1, 5, 6)
+
+print(length(x) == length(x[x==cee]))
+print(length(x) == length(x[x==dee]))
+
+#length of the vector is the same as the length of the
+#vector when they share the same values
+
+#theres probably a better way to do this... lol
+#suggested answer: 
+x <- y <- c(7, 9, NA, NA, 13)
+print(all(is.na(x)==is.na(y)) & all((x==y)[!is.na(x)]))
+
+#Problem 2: If x is a factor with n levels, and y is a length n vector, what
+#happens when you compute y[x]
+
+#hypothesis: will print the relative size aka "none", "low", "medium", "high"
+
+x <- factor(c(0, 3, 2, 2, 1), levels=0:3)
+levels(x) <- c("none", "low", "medium", "high")
+y <- c(4, 6, 7, 8)
+
+print(y[x])
+# result: 4 8 7 7 6  It prints out 0, 3, 2, 2, 1 with the y values as the names
+# y[x] is basically the same as the levels command tbh.
+#"Useful forselecting plot symbols"
+
+#Problem 3: Write the logical expression to use to extract girls between 7 and
+#14 years of age in the juul data set.
+
+d <- data.frame(juul)
+print(head(d))
+
+s <- d[((floor(d$age) >= 7)&(floor(d$age) < 14)),]
+s <- s[!is.na(s$age),]
+print(s)
+
+#suggested answer forgot to sort by gender
+juul.girl <- juul[juul$age >= 7 & juul$age < 14 & juul$sex == 2,]
+print(summary(juul.girl))
+
+#problem 4
+# What happens if you change the levels of a factor (with levels) and give the
+#same value to 2 or more levels? 
+x <- factor(c(0, 3, 2, 2, 1), levels=0:3)
+levels(x) <- c("none", "medium", "medium", "high")
+print(x)
+
+#treats it distinctly anyway, just cant see from the printout. 
+
+#Problem 5
+#On. p.27, replicate was used to simulate the distribution of the mean of 20 
+#random numbers from the exponential distribution by repeating the operation 10
+#times. How would you do the same thing with sapply?
+
+print(replicate(10, mean(rexp(20))))
+
+print(sapply(1:10, function(i) mean(rexp(20))))

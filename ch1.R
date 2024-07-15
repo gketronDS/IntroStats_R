@@ -166,3 +166,4 @@ print(x)
 print(replicate(10, mean(rexp(20))))
 
 print(sapply(1:10, function(i) mean(rexp(20))))
+ls()

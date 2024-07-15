@@ -110,5 +110,5 @@ print(y)
 #works lol
 
 #do a bunch of edits with text editor 
-write.table(thuesen, file="foo.txt", na=".")
-read.table("foo.text", na.strings = ".")
+write.table(thuesen, file="IntroStats_R/foo.txt", na=".")
+read.table("IntroStats_R/foo.txt", na.strings = ".")

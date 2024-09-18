@@ -163,3 +163,30 @@ pie(caff.martial["Married",], main = "Married", col=slices)
 pie(caff.martial["Prev.married",], main = "Previously Married", col = slices)
 pie(caff.martial["Single",], main = "Single", col = slices)
 par(opar)
+
+#4.1
+x <- rnorm(50)
+n <- length(x)
+plot(sort(x), (1:n)/n, type="b", ylim=c(0,1), lty = c("solid"), lwd=10, pch=5 ,col = c("grey50"))
+
+#4.2
+plot(rnorm(10), type = "o", pch=21, bg="white") #use type b instead to remove lines in points, pick full symbol
+
+#4.3
+x1 <- rnorm(20)
+x2 <- rnorm(10) + 1
+q1 <- qqnorm(x1, plot.it=F)
+q2 <- qqnorm(x2, plot.it=F)
+xr <- range(q1$x, q2$x)
+yr <- range(q1$y, q2$y)
+qqnorm(sort(x1), xlim=xr, ylim=yr, type="l")
+points(q2, col="red")
+
+#4.4
+hist(react)
+library(MASS)
+
+
+#4.5 
+z <- runif(5)
+curve(quantile(z, x), from=0, to=1)

@@ -73,3 +73,29 @@ print(cor.test(blood.glucose, short.velocity, method='spearman'))
 #count concordant and discordant pairs
 print(cor.test(blood.glucose, short.velocity, method='kendall'))
 
+#6.5.1
+print(rmr)
+
+fit <- lm(metabolic.rate ~ body.weight, data=rmr)
+
+print(summary(fit))
+print(predict(fit, newdata=data.frame(body.weight=70)))
+print(confint(fit))
+
+#6.2
+print(summary(lm(sqrt(igf1)~age, data=juul, subset=age>25)))
+
+#6.3
+print(malaria)
+print(summary(lm(log(ab)~age, data=malaria)))
+plot(log(ab)~age, data=malaria)
+
+#6.4
+rho <- .9
+n <- 100
+x <- rnorm(n)
+y <- rnorm(n, rho * x, sqrt(1-rho^2))
+plot(x,y)
+print(cor.test(x,y))
+print(cor.test(x,y, method='spearman'))
+print(cor.test(x,y, method='kendall'))

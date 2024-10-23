@@ -101,6 +101,136 @@ print(drop1(fit2, test="Chisq"))
 print(summary(fit2))
 
 #fit 2 is all significant
+cf <- coefficients(summary(fit2))
+est <- cf[,1]
+s.e. <- cf[,2]
+rr <- exp(cbind(est, est-s.e.*qnorm(.975), est + s.e.*qnorm(.975)))
+colnames(rr) <- c("RateRatio", "CI.lo", "CI.hi")
+print(rr)
 
+print(exp(cbind(coef(fit2), confint(fit2))))
+detach()
+#15.3 Computing rates
+head(nickel.expand)
+print(subset(nickel.expand, id==325))
 
+nickel.expand <- within(nickel.expand, lung.cancer <- as.numeric(icd %in% c(162,163)))
+attach(nickel.expand)
 
+pyr <- tapply(ageout-agein, list(ygr,agr), sum)
+print(round(pyr), na.print = "-")
+
+count <- tapply(lung.cancer, list(ygr, agr), sum)
+print(count, na.print="-")
+
+print(round(count/pyr*1000, 1), na.print="-")
+
+#compute expected counts in each cell based on the standard mortality table 
+#and then compare to the actual counts
+
+expect.count <- tapply(lung/1e6*(ageout-agein), list(ygr, agr), sum)
+print(round(expect.count, 1), na.print="-")
+
+#observed counts are larger than expected so we need to scale them to the overall standard mortality rate. 
+#gotten from ratio of total cases to expected number of cases:family
+
+expect.tot <- sum(lung/1e6*(ageout-agein))
+print(expect.tot)
+count.tot <- sum(lung.cancer)
+print(count.tot)
+print(count.tot/expect.tot)
+
+#This dataset has 6 times as many cancer deaths as the general population. 
+
+#15.4 Models with piecewise constant intensities
+#Can formulate SMR as a Poisson regression model. 
+#SMR asssumption is that there is a constant rate ratio to standard mortality,
+#so we can fit a model with only an intercept while having an offset, 
+#Which is the log of the expected count. Similar to modeling rates. Pop mortality pi 
+#is just absorbed into the offset log pi + log Ti = log pi Ti. 
+
+fit <- glm(lung.cancer ~ 1, poisson, offset = log((ageout-agein)*lung/1e6))
+print(summary(fit))
+
+#model based on individual data, dependent variable is 0 or 1.
+# could make model based on cross classification of agr, and ygr, but you 
+#couldnt check covariates like age at first exposure
+
+#cant use the deviances for model checking both because the expected counts per 
+#cell are very small 
+
+print(exp(coef(fit)))
+
+#We can analyze the data more thoroughly using regression methods. 
+#check is smr stays constant over year and age groups using a multiplicative poisson model 
+
+#this requires simplified groupings because some of the groups contain very few cases.
+
+print(tapply(lung.cancer, agr, sum))
+print(tapply(lung.cancer, ygr, sum))
+
+#need at least 10 cases per level
+
+detach()
+nickel.expand <-within(nickel.expand,{
+    A <- factor(agr)
+    Y <- factor(ygr)
+    lv <- levels(A)
+    lv[1:6] <- "<50"
+    lv[11:13] <- "70+"
+    levels(A) <- lv
+    lv <- levels(Y)
+    lv[7:10] <- "1961ff"
+    levels(Y) <- lv
+    rm(lv)
+})
+attach(nickel.expand)
+
+fit <- glm(lung.cancer ~ A + Y, poisson, offset = log((ageout-agein)*lung/1e6))
+print(drop1(fit, test="Chisq"))
+#Dont need age groups
+
+fit <- glm(lung.cancer ~ Y - 1, poisson, offset = log((ageout-agein)*lung/1e6))
+print(summary(fit))
+
+print(round(exp(coef(fit)),1))
+
+expect.count <- tapply(lung/1e6*(ageout-agein), Y, sum)
+count <- tapply(lung.cancer, Y, sum)
+print(cbind(count=count, expect=round(expect.count,1), SMR=round(count/expect.count, 1)))
+
+detach()
+nickel.expand <- within(nickel.expand, {
+    TFE <- cut(agein-age1st, c(0, 20, 30, 40, 50, 100), right=F)
+    AFE <- cut(age1st, c(0, 20, 27.5, 35, 100), right=F)
+    YFE <- cut(dob + age1st, c(0, 1910, 1915, 1920, 1925), right=F)
+    EXP <- cut(exposure, c(0, 0.5, 4.5, 8.5, 12.5, 25), right=F)
+})
+
+attach(nickel.expand)
+fit <- glm(lung.cancer ~ TFE + AFE + YFE + EXP, poisson, offset = log((ageout-agein)*lung/1e6))
+print(drop1(fit, test="Chisq"))
+detach()
+#Ex.1 
+bcmort21 <- within(bcmort, { 
+    period <- area <- cohort
+    levels(period) <- rep(c("1991-2001", "1981-1991"), each=2)
+    levels(area) <- rep(c("Cph+Frb", "Nat"), 2)
+})
+attach(bcmort21)
+
+fit <- glm(bc.deaths ~ (age + period + area)^2, poisson, offset = log(p.yr), data=bcmort21)
+print(summary(fit))
+print(drop1(fit, test="Chisq"))
+print(confint(fit, parm="period1981-1991:areaNat"))
+detach()
+#Ex 2
+stroke.trim <- function(t1, t2) subset(transform(stroke,
+    entry=t1, exit=pmin(t2, obstime),
+    dead=dead & obstime <=t2),
+    entry < exit)
+stroke2 <- do.call(rbind, mapply(stroke.trim, c(0,0.5,2, 12), c(0.5, 2, 12, Inf), SIMPLIFY = F))
+print(table(stroke$dead))
+print(table(stroke2$dead))
+
+print
